@@ -1,10 +1,28 @@
+<%
+  url = "i18n/#{current_language}.js"
+  plugin = Redmine::Plugin.find(:redmine__select2)
+  locale_asset_path = File.join(plugin.directory, 'assets', 'javascripts', url)
+  locale_file_exists = File.exist?(locale_asset_path)
+%>
 <%= stylesheet_link_tag 'select2.min.css', plugin: 'redmine__select2' %>
 <%= stylesheet_link_tag 'customize.css', plugin: 'redmine__select2' %>
 <%= javascript_include_tag 'jquery-3.1.1.min.js', plugin: 'redmine__select2' %>
 <%= javascript_include_tag 'select2.full.min.js', plugin: 'redmine__select2' %>
-<%=
-  url = "i18n/#{current_language}.js"
-  file_path = File.join(Redmine::Plugin.public_directory, 'redmine__select2', 'javascripts', url)
-  javascript_include_tag url, plugin: 'redmine__select2' if File.exists?(file_path)
+<%= javascript_include_tag url, plugin: 'redmine__select2' if locale_file_exists %>
+<%= javascript_tag <<~JS
+  var shouldNoConflict = !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.jquery === '3.1.1');
+  if (shouldNoConflict) {
+    window.jql = jQuery.noConflict(true);
+  } else {
+    window.jql = window.jQuery;
+  }
+
+  if (window.jQuery && window.jQuery.fn && !window.jQuery.fn.select2 && window.jql && window.jql.fn && window.jql.fn.select2) {
+    window.jQuery.fn.select2 = function () {
+      var mapped = window.jql(this.toArray ? this.toArray() : this);
+      var result = window.jql.fn.select2.apply(mapped, arguments);
+      return result === mapped ? this : result;
+    };
+  }
+JS
 %>
-<%= javascript_tag 'window.jql = jQuery.noConflict(true);' %>

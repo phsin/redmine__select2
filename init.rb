@@ -8,4 +8,5 @@ Redmine::Plugin.register :redmine__select2 do
   url         'https://github.com/Undev/redmine__select2'
 end
 
-require 'redmine_select2'
+#require 'redmine_select2'
+require_relative 'lib/redmine_select2/hooks/view_hooks'
